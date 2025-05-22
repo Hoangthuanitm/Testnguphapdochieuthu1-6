@@ -1228,52 +1228,62 @@
         }
 
         function shuffleOptions() {
-            const questions = document.querySelectorAll('.question, .example');
-            questions.forEach(question => {
-                const optionsContainer = question.querySelector('.options');
-                const options = Array.from(optionsContainer.querySelectorAll('.option'));
-                const correctAnswerId = answerKey[question.querySelector('input[name]').name.replace('q', '')] || 
-                    (question.querySelector('input[checked]') ? parseInt(question.querySelector('input[checked]').id.split('-')[1]) : null);
+    const questions = document.querySelectorAll('.question, .example');
+    questions.forEach(question => {
+        const optionsContainer = question.querySelector('.options');
+        if (!optionsContainer) return; // Bỏ qua nếu không tìm thấy optionsContainer
+        const options = Array.from(optionsContainer.querySelectorAll('.option'));
+        const inputName = question.querySelector('input[name]');
+        if (!inputName) return; // Bỏ qua nếu không tìm thấy input[name]
+        const questionName = inputName.name;
+        const correctAnswerId = answerKey[questionName.replace('q', '')] || 
+            (question.querySelector('input[checked]') ? parseInt(question.querySelector('input[checked]').id.split('-')[1]) : null);
 
-                // Store original option data
-                const optionData = options.map(option => ({
-                    id: option.querySelector('input').id,
-                    name: option.querySelector('input').name,
-                    checked: option.querySelector('input').checked,
-                    label: option.querySelector('label').textContent
-                }));
+        // Store original option data
+        const optionData = options.map(option => {
+            const input = option.querySelector('input');
+            if (!input) return null;
+            return {
+                id: input.id,
+                name: input.name,
+                checked: input.checked,
+                label: option.querySelector('label')?.textContent || ''
+            };
+        }).filter(data => data !== null);
 
-                // Shuffle options
-                shuffleArray(optionData);
+               // Shuffle options
+        shuffleArray(optionData);
 
-                // Update DOM
-                optionsContainer.innerHTML = '';
-                optionData.forEach((data, index) => {
-                    const optionDiv = document.createElement('div');
-                    optionDiv.className = 'option';
-                    const input = document.createElement('input');
-                    input.type = 'radio';
-                    input.id = `${data.name}-${index + 1}`;
-                    input.name = data.name;
-                    if (data.checked) input.checked = true;
-                    const label = document.createElement('label');
-                    label.htmlFor = input.id;
-                    label.textContent = data.label;
-                    optionDiv.appendChild(input);
-                    optionDiv.appendChild(label);
-                    optionsContainer.appendChild(optionDiv);
-                });
+        // Update DOM
+        optionsContainer.innerHTML = '';
+        optionData.forEach((data, index) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option';
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.id = `${data.name}-${index + 1}`;
+            input.name = data.name;
+            if (data.checked) input.checked = true;
+            const label = document.createElement('label');
+            label.htmlFor = input.id;
+            label.textContent = data.label;
+            optionDiv.appendChild(input);
+            optionDiv.appendChild(label);
+            optionsContainer.appendChild(optionDiv);
+        });
 
-                // Update answerKey if not an example
-                if (!question.classList.contains('example')) {
-                    const questionNumber = parseInt(data.name.replace('q', ''));
-                    if (correctAnswerId) {
-                        const newCorrectIndex = optionData.findIndex(opt => opt.id === `${data.name}-${correctAnswerId}`);
-                        answerKey[questionNumber] = newCorrectIndex + 1;
-                    }
+        // Update answerKey if not an example
+        if (!question.classList.contains('example') && correctAnswerId !== null) {
+            const questionNumber = parseInt(questionName.replace('q', '')) || 0;
+            if (questionNumber > 0) {
+                const newCorrectIndex = optionData.findIndex(opt => opt.id === `${questionName}-${correctAnswerId}`);
+                if (newCorrectIndex !== -1) {
+                    answerKey[questionNumber] = newCorrectIndex + 1;
                 }
-            });
+            }
         }
+    });
+}
 
         function normalizeString(str) {
             return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -1521,26 +1531,30 @@
         }
 
         document.getElementById('start-test').addEventListener('click', () => {
-            const name = document.getElementById('name').value.trim();
-            const className = document.getElementById('class').value.trim();
-            const dateInput = document.getElementById('date').value;
-            const messageInfo = document.getElementById('message-info');
+    const name = document.getElementById('name').value.trim();
+    const className = document.getElementById('class').value.trim();
+    const dateInput = document.getElementById('date').value;
+    const messageInfo = document.getElementById('message-info');
 
-            if (!name || !className || !dateInput) {
-                messageInfo.textContent = 'Vui lòng điền đầy đủ thông tin cá nhân.';
-                return;
-            }
-
-           messageInfo.textContent = '';
-            document.getElementById('start-test').style.display = 'none';
-            document.getElementById('history-test').style.display = 'none';
-            document.querySelectorAll('.question-section').forEach(section => {
-                section.style.display = 'block';
-            });
-            document.getElementById('submit-test').style.display = 'block';
-            document.getElementById('timer').style.display = 'block';
-            startTimer();
-        });
+    if (!name || !className || !dateInput) {
+        messageInfo.textContent = 'Vui lòng điền đầy đủ thông tin cá nhân.';
+        return;
+    }
+    messageInfo.textContent = '';
+    document.getElementById('start-test').style.display = 'none';
+    document.getElementById('history-test').style.display = 'none';
+    document.querySelectorAll('.question-section').forEach(section => {
+        section.style.display = 'block';
+    });
+    document.getElementById('submit-test').style.display = 'block';
+    document.getElementById('timer').style.display = 'block';
+    startTimer(); // Gọi startTimer trước
+    try {
+        shuffleOptions(); // Gọi shuffleOptions sau
+    } catch (error) {
+        console.error('Lỗi khi trộn đáp án:', error);
+    }
+});
 
         document.getElementById('submit-test').addEventListener('click', submitTest);
     </script>
