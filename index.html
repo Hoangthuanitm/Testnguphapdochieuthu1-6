@@ -611,7 +611,7 @@
                     <input type="radio" id="q3-rei-4" name="q3-rei">
                     <label for="q3-rei-4">は</label>
                 </div>
-                </div>
+            </div>
             <div class="answer-feedback" id="feedback-q3-rei"></div>
         </div>
         <div class="question">
@@ -670,7 +670,6 @@
                     <label for="q13-2">で</label>
                 </div>
                 <div class="option">
-                    <input class="option">
                     <input type="radio" id="q13-3" name="q13">
                     <label for="q13-3">レストラン</label>
                 </div>
@@ -829,7 +828,6 @@
     <div class="question-section">
         <h2>問題V．1～4の中から、一番 良いもの を一つ 選んでください。（3*5=15）</h2>
         <div class="vietnamese">Hãy chọn 1 đáp án thích hợp nhất để hoàn thành đoạn hội thoại sau</div>
-       .teraction>
         <div class="example">
             <p>ラン：はじめまして。ランです。さくらだいがくの（ ① ）です。しつれいですが、おなまえは？<br/>
             田中： （ ② ）。わたしは 田中 です。トヨタの しゃいん です。 どうぞよろしく。<br/>
@@ -1086,7 +1084,7 @@
                     <h3>Bとうきょう（はねだ）―＞ひろしま</h3>
                     <table border="1">
                         <tr>
-                             <th>びんめい</th>
+                            <th>びんめい</th>
                             <th>しゅっぱつ</th>
                             <th>とうちゃく</th>
                         </tr>
@@ -1186,7 +1184,7 @@
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js";
 
         // Firebase configuration
-       const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyAfy4QMD9_7PyFHpInNdKDRWuW4AYCtLJ4",
             authDomain: "history-e4633.firebaseapp.com",
             projectId: "history-e4633",
@@ -1197,12 +1195,18 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+        }
 
         // Answer key for the grammar and reading test
         const answerKey = {
-            1: 2, 2: 1, 3: 1, 4: 1, 5: 2, // 問題I
+            1: 2, 2: 4, 3: 1, 4: 1, 5: 2, // 問題I
             6: 1, 7: 1, 8: 3, 9: 2, 10: 1, // 問題II
             11: 3, 12: 2, 13: 1, 14: 2, // 問題III
             15: 3, 16: 3, 17: 1, 18: 3, 19: 1, // 問題IV
@@ -1235,7 +1239,6 @@
                 const correctAnswerId = answerKey[question.querySelector('input[name]').name.replace('q', '')] || 
                     (question.querySelector('input[checked]') ? parseInt(question.querySelector('input[checked]').id.split('-')[1]) : null);
 
-                // Store original option data
                 const optionData = options.map(option => ({
                     id: option.querySelector('input').id,
                     name: option.querySelector('input').name,
@@ -1243,10 +1246,8 @@
                     label: option.querySelector('label').textContent
                 }));
 
-                // Shuffle options
                 shuffleArray(optionData);
 
-                // Update DOM
                 optionsContainer.innerHTML = '';
                 optionData.forEach((data, index) => {
                     const optionDiv = document.createElement('div');
@@ -1264,7 +1265,6 @@
                     optionsContainer.appendChild(optionDiv);
                 });
 
-                // Update answerKey if not an example
                 if (!question.classList.contains('example')) {
                     const questionNumber = parseInt(data.name.replace('q', ''));
                     if (correctAnswerId) {
@@ -1327,6 +1327,7 @@
         }
 
         function startTimer() {
+            console.log("Starting timer...");
             startTime = new Date();
             const endTime = new Date(startTime.getTime() + 50 * 60 * 1000);
             const timerElement = document.getElementById('timer');
@@ -1338,6 +1339,7 @@
                     clearInterval(timerInterval);
                     timerElement.textContent = 'Hết giờ!';
                     timerElement.classList.add('warning');
+                    console.log("Timer ended, submitting test...");
                     submitTest();
                     return;
                 }
@@ -1354,6 +1356,7 @@
             const passwordInput = document.getElementById('password-input').value;
             const passwordError = document.getElementById('password-error');
             if (passwordInput === '112') {
+                console.log("Password correct, redirecting to history.html");
                 window.location.href = 'history.html';
             } else {
                 passwordError.textContent = 'Mật khẩu không đúng. Vui lòng thử lại.';
@@ -1372,13 +1375,13 @@
             document.getElementById('password-error').textContent = '';
         }
 
-        // Make functions available globally for HTML onclick
         window.checkPassword = checkPassword;
         window.showPasswordModal = showPasswordModal;
         window.closePasswordModal = closePasswordModal;
         window.resetTest = resetTest;
 
         async function submitTest() {
+            console.log("Submitting test...");
             const endTime = new Date();
             const name = document.getElementById('name').value.trim();
             const className = document.getElementById('class').value.trim();
@@ -1389,6 +1392,7 @@
 
             if (!name || !className || !dateInput) {
                 messageResult.textContent = 'Vui lòng điền đầy đủ thông tin cá nhân.';
+                console.log("Missing personal info");
                 return;
             }
 
@@ -1432,7 +1436,7 @@
                     <tbody>
                         <tr>
                             <td>${section1Score}/${sectionPoints[1]}</td>
-                            <td>${section2Score}/${sectionPoints[2]}</td>
+                                                        <td>${section2Score}/${sectionPoints[2]}</td>
                             <td>${section3Score}/${sectionPoints[3]}</td>
                             <td>${section4Score}/${sectionPoints[4]}</td>
                             <td>${section5Score}/${sectionPoints[5]}</td>
@@ -1444,79 +1448,75 @@
                         </tr>
                     </tbody>
                 </table>
-                <button onclick="window.showPasswordModal()">Lịch sử kiểm tra</button>
-                <button class="reset" onclick="window.resetTest()">Làm lại</button>
             `;
-
             scoreDisplay.innerHTML = resultTable;
             resultSection.style.display = 'block';
 
-            try {
-                await addDoc(collection(db, 'testHistorynguphapdochieu1-6'), {
-                    startTime: formatTime(startTime),
-                    endTime: formatTime(endTime),
-                    date: dateInput,
-                    name,
-                    className,
-                    section1: section1Score,
-                    section2: section2Score,
-                    section3: section3Score,
-                    section4: section4Score,
-                    section5: section5Score,
-                    section6: section6Score,
-                    section7: section7Score,
-                    totalScore,
-                    percentage,
-                    evaluation,
-                    timestamp: new Date()
-                });
-                messageResult.textContent = 'Kết quả đã được lưu thành công!';
-            } catch (error) {
-                console.error('Lỗi khi lưu vào Firestore:', error);
-                messageResult.textContent = 'Đã xảy ra lỗi khi lưu kết quả. Vui lòng thử lại.';
-            }
-
-            const testHistory = JSON.parse(localStorage.getItem('testHistorynguphapdochieu1-6') || '[]');
-            testHistory.push({
-                startTime: formatTime(startTime),
-                endTime: formatTime(endTime),
-                date: dateInput,
+            // Save to localStorage
+            const testResult = {
                 name,
-                className,
+                class: className,
+                date: dateInput,
                 section1: section1Score,
                 section2: section2Score,
                 section3: section3Score,
                 section4: section4Score,
                 section5: section5Score,
                 section6: section6Score,
-                                section7: section7Score,
-                totalScore,
+                section7: section7Score,
+                total: totalScore,
                 percentage,
-                evaluation
+                evaluation,
+                startTime: formatTime(startTime),
+                endTime: formatTime(endTime)
+            };
+
+            let history = JSON.parse(localStorage.getItem('testHistorynguphapdochieu1-6')) || [];
+            history.push(testResult);
+            localStorage.setItem('testHistory', JSON.stringify(history));
+            console.log("Test result saved to localStorage:", testResult);
+
+            // Save to Firestore
+            if (db) {
+                try {
+                    await addDoc(collection(db, "testHistorynguphapdochieu1-6"), testResult);
+                    console.log("Test result saved to Firestore");
+                } catch (error) {
+                    console.error("Error saving to Firestore:", error);
+                    messageResult.textContent = 'Lỗi khi lưu kết quả vào Firestore. Kết quả đã được lưu cục bộ.';
+                }
+            } else {
+                console.warn("Firestore not initialized, result saved locally only");
+            }
+
+            // Disable all inputs
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.disabled = true;
             });
-            localStorage.setItem('testHistorynguphapdochieu1-6', JSON.stringify(testHistory));
         }
 
         function resetTest() {
+            console.log("Resetting test...");
             document.getElementById('name').value = '';
             document.getElementById('class').value = '';
             document.getElementById('date').value = '';
-            document.getElementById('message-info').textContent = '';
-            document.getElementById('message-result').textContent = '';
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.checked = false;
+                input.disabled = false;
+            });
+            document.querySelectorAll('.answer-feedback').forEach(feedback => {
+                feedback.textContent = '';
+                feedback.classList.remove('wrong');
+            });
             document.getElementById('results').style.display = 'none';
-            document.getElementById('score-display').innerHTML = '';
-            document.getElementById('start-test').style.display = 'inline-block';
-            document.getElementById('history-test').style.display = 'inline-block';
-            document.getElementById('submit-test').style.display = 'none';
+            document.getElementById('message-result').textContent = '';
             document.getElementById('timer').style.display = 'none';
+            document.getElementById('submit-test').style.display = 'none';
             document.querySelectorAll('.question-section').forEach(section => {
                 section.style.display = 'none';
-                section.querySelectorAll('input[type="radio"]').forEach(input => input.checked = false);
-                section.querySelectorAll('.answer-feedback').forEach(feedback => {
-                    feedback.textContent = '';
-                    feedback.classList.remove('wrong');
-                });
             });
+            document.getElementById('start-test').style.display = 'inline-block';
+            document.getElementById('history-test').style.display = 'inline-block';
             clearInterval(timerInterval);
         }
 
@@ -1528,25 +1528,23 @@
 
             if (!name || !className || !dateInput) {
                 messageInfo.textContent = 'Vui lòng điền đầy đủ thông tin cá nhân.';
+                console.log("Missing personal info on start");
                 return;
             }
 
             messageInfo.textContent = '';
+            document.querySelectorAll('.question-section').forEach(section => {
+                section.style.display = 'block';
+            });
             document.getElementById('start-test').style.display = 'none';
             document.getElementById('history-test').style.display = 'none';
             document.getElementById('submit-test').style.display = 'inline-block';
             document.getElementById('timer').style.display = 'block';
-            document.querySelectorAll('.question-section').forEach(section => {
-                section.style.display = 'block';
-            });
-
-            // Shuffle options for all questions and examples
-            shuffleOptions();
-
             startTimer();
+            shuffleOptions();
         });
 
         document.getElementById('submit-test').addEventListener('click', submitTest);
-    </script>
+ </script>
 </body>
 </html>
